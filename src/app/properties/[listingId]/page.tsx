@@ -1,3 +1,4 @@
+// src/app/properties/[listingId]/page.tsx
 interface PropertyPageProps {
   params: {
     listingId: string;
@@ -17,7 +18,6 @@ export default function PropertyPage({ params }: PropertyPageProps) {
           <p className="text-gray-600">
             Property details and reviews will be displayed here.
           </p>
-          {/* Property details and reviews will go here */}
         </div>
       </div>
     </div>

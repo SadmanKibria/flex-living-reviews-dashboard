@@ -1,0 +1,102 @@
+// src/components/dashboard/ReviewsTable.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { fetchReviews } from '@/lib/api';
+import { format } from 'date-fns';
+import { Star } from 'lucide-react';
+import { ReviewModal } from './ReviewModal';
+
+export function ReviewsTable() {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedReview, setSelectedReview] = useState<any | null>(null);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const data = await fetchReviews();
+        setReviews(data.reviews);
+      } catch (err) {
+        setError('Failed to load reviews');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReviews();
+  }, []);
+
+  if (loading) {
+    return <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  if (!reviews.length) {
+    return <div className="text-gray-500">No reviews found</div>;
+  }
+
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <div className="min-w-full divide-y divide-gray-200">
+          <div className="bg-gray-50">
+            <div className="grid grid-cols-12 gap-4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div className="col-span-3">Listing</div>
+              <div className="col-span-2">Channel</div>
+              <div className="col-span-1">Rating</div>
+              <div className="col-span-2">Date</div>
+              <div className="col-span-3">Review</div>
+              <div className="col-span-1">Actions</div>
+            </div>
+          </div>
+          <div className="bg-white divide-y divide-gray-200">
+            {reviews.map((review) => (
+              <div key={review.id} className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-gray-50">
+                <div className="col-span-3 text-sm font-medium text-gray-900">
+                  {review.listingName}
+                </div>
+                <div className="col-span-2 text-sm text-gray-500">
+                  {review.channel}
+                </div>
+                <div className="col-span-1">
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="ml-1 text-sm text-gray-900">
+                      {review.overallRating?.toFixed(1) || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <div className="col-span-2 text-sm text-gray-500">
+                  {format(new Date(review.submittedAt), 'MMM d, yyyy')}
+                </div>
+                <div className="col-span-3 text-sm text-gray-500 truncate">
+                  {review.publicReview}
+                </div>
+                <div className="col-span-1 text-sm font-medium">
+                  <button
+                    onClick={() => setSelectedReview(review)}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ReviewModal
+        isOpen={!!selectedReview}
+        onClose={() => setSelectedReview(null)}
+        review={selectedReview}
+      />
+    </>
+  );
+}
