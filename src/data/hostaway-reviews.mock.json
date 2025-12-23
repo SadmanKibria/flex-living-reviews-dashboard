@@ -1,0 +1,219 @@
+/**
+ * Mock dataset simulating Hostaway API response for development and testing.
+ * Contains realistic, messy data with variations to test different scenarios.
+ */
+
+{
+  "status": 200,
+  "message": "success",
+  "pagination": {
+    "page": 1,
+    "itemsPerPage": 10,
+    "totalCount": 24,
+    "totalPages": 3
+  },
+  "data": [
+    {
+      "id": "rev_001",
+      "listingId": "prop_123",
+      "listingName": "Flex Living - Soho Apartment",
+      "channel": "Airbnb",
+      "channelId": "air_789456",
+      "guestName": "Sarah M.",
+      "guestImage": "https://randomuser.me/api/portraits/women/43.jpg",
+      "rating": 9,
+      "reviewText": "Great location and very clean apartment. The host was responsive and helpful throughout our stay. Would definitely book again!",
+      "submittedAt": "2025-12-15T14:30:00Z",
+      "categoryRatings": {
+        "cleanliness": 10,
+        "communication": 9,
+        "checkIn": 10,
+        "accuracy": 8,
+        "location": 10,
+        "value": 9
+      },
+      "response": {
+        "text": "Thank you for your kind words, Sarah! We're delighted you enjoyed your stay.",
+        "submittedAt": "2025-12-16T09:15:00Z"
+      }
+    },
+    {
+      "id": "rev_002",
+      "listingId": "prop_456",
+      "listingName": "Flex Living - Downtown Loft",
+      "channel": "Booking.com",
+      "channelId": "book_321654",
+      "guestName": "James T.",
+      "rating": 7,
+      "reviewText": "Good location but the apartment was quite noisy at night. The bed was comfortable though.",
+      "submittedAt": "2025-12-10T18:45:00Z",
+      "categoryRatings": {
+        "cleanliness": 8,
+        "communication": 7,
+        "checkIn": 9,
+        "accuracy": 6,
+        "location": 7,
+        "value": 7
+      }
+    },
+    {
+      "id": "rev_003",
+      "listingId": "prop_123",
+      "listingName": "Flex Living - Soho Apartment",
+      "channel": "Google",
+      "channelId": "goog_987654",
+      "guestName": "Alex Johnson",
+      "guestImage": "https://randomuser.me/api/portraits/men/32.jpg",
+      "rating": 10,
+      "reviewText": "Absolutely perfect stay! The apartment was spotless and had everything we needed. The location couldn't be better.",
+      "submittedAt": "2025-12-18T10:20:00Z",
+      "categoryRatings": {
+        "cleanliness": 10,
+        "communication": 10,
+        "checkIn": 10,
+        "accuracy": 10,
+        "location": 10,
+        "value": 10
+      },
+      "response": null
+    },
+    {
+      "id": "rev_004",
+      "listingId": "prop_789",
+      "listingName": "Flex Living - Riverside View",
+      "channel": "Airbnb",
+      "channelId": "air_123789",
+      "guestName": "Maria G.",
+      "rating": 4,
+      "reviewText": "The view was amazing but the apartment wasn't very clean when we arrived. The host was apologetic and sent someone to clean immediately.",
+      "submittedAt": "2025-12-05T16:10:00Z",
+      "categoryRatings": {
+        "cleanliness": 3,
+        "communication": 8,
+        "checkIn": 7,
+        "accuracy": 5,
+        "location": 9,
+        "value": 6
+      },
+      "response": {
+        "text": "We sincerely apologize for the cleanliness issues. This is not our standard and we've addressed this with our cleaning team.",
+        "submittedAt": "2025-12-05T17:30:00Z"
+      }
+    },
+    {
+      "id": "rev_005",
+      "listingId": "prop_123",
+      "listingName": "Flex Living - Soho Apartment",
+      "channel": "Booking.com",
+      "channelId": "book_456123",
+      "guestName": "Thomas R.",
+      "rating": 8,
+      "reviewText": "Great value for the location. The apartment was clean and had all the essentials. Some street noise at night but earplugs were provided.",
+      "submittedAt": "2025-12-01T12:00:00Z",
+      "categoryRatings": {
+        "cleanliness": 9,
+        "communication": 8,
+        "checkIn": 9,
+        "accuracy": 8,
+        "location": 9,
+        "value": 9
+      }
+    },
+    {
+      "id": "rev_006",
+      "listingId": "prop_456",
+      "listingName": "Flex Living - Downtown Loft",
+      "channel": "Airbnb",
+      "channelId": "air_456789",
+      "guestName": "Lisa K.",
+      "rating": 6,
+      "reviewText": "The location was central but the apartment needs some maintenance. The shower pressure was very low.",
+      "submittedAt": "2025-11-28T14:20:00Z",
+      "categoryRatings": {
+        "cleanliness": 7,
+        "communication": 8,
+        "checkIn": 8,
+        "accuracy": 5,
+        "location": 8,
+        "value": 6
+      }
+    },
+    {
+      "id": "rev_007",
+      "listingId": "prop_789",
+      "listingName": "Flex Living - Riverside View",
+      "channel": "Google",
+      "channelId": "goog_123456",
+      "guestName": "David Wilson",
+      "rating": 10,
+      "reviewText": "Stunning views and excellent service. The apartment was modern and had all the amenities we needed for a comfortable stay.",
+      "submittedAt": "2025-11-25T09:15:00Z",
+      "categoryRatings": {
+        "cleanliness": 10,
+        "communication": 10,
+        "checkIn": 10,
+        "accuracy": 10,
+        "location": 10,
+        "value": 10
+      },
+      "response": {
+        "text": "Thank you, David! We're thrilled you enjoyed the views and your stay with us.",
+        "submittedAt": "2025-11-25T11:30:00Z"
+      }
+    },
+    {
+      "id": "rev_008",
+      "listingId": "prop_123",
+      "listingName": "Flex Living - Soho Apartment",
+      "channel": "Airbnb",
+      "channelId": "air_987654",
+      "guestName": "Emma S.",
+      "rating": null,
+      "reviewText": "The apartment was nice but I don't feel comfortable giving a rating as I had to cut my trip short due to a family emergency.",
+      "submittedAt": "2025-11-20T16:45:00Z",
+      "categoryRatings": null
+    },
+    {
+      "id": "rev_009",
+      "listingId": "prop_456",
+      "listingName": "Flex Living - Downtown Loft",
+      "channel": "Booking.com",
+      "channelId": "book_789123",
+      "guestName": "Robert L.",
+      "rating": 9,
+      "reviewText": "Great place to stay in the heart of the city. The loft was spacious and had great natural light.",
+      "submittedAt": "2025-11-18T11:20:00Z",
+      "categoryRatings": {
+        "cleanliness": 9,
+        "communication": 9,
+        "checkIn": 9,
+        "accuracy": 9,
+        "location": 10,
+        "value": 9
+      }
+    },
+    {
+      "id": "rev_010",
+      "listingId": "prop_789",
+      "listingName": "Flex Living - Riverside View",
+      "channel": "Airbnb",
+      "channelId": "air_147258",
+      "guestName": "Sophia K.",
+      "rating": 5,
+      "reviewText": "The view was the only good thing about this place. The apartment was not as clean as expected and the wifi didn't work properly.",
+      "submittedAt": "2025-11-15T13:10:00Z",
+      "categoryRatings": {
+        "cleanliness": 3,
+        "communication": 7,
+        "checkIn": 6,
+        "accuracy": 4,
+        "location": 9,
+        "value": 4
+      },
+      "response": {
+        "text": "We're sorry to hear about your experience, Sophia. We've addressed the cleaning and wifi issues with our team.",
+        "submittedAt": "2025-11-15T15:45:00Z"
+      }
+    }
+  ]
+}
