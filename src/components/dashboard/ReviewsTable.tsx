@@ -7,6 +7,8 @@ import { format } from 'date-fns';
 import { Star } from 'lucide-react';
 import { ReviewModal } from './ReviewModal';
 
+import type { NormalizedReview } from '@/app/api/reviews/hostaway/types';
+
 export function ReviewsTable({
   query,
 }: {
@@ -20,10 +22,10 @@ export function ReviewsTable({
     sortBy?: string;
   };
 }) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<NormalizedReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedReview, setSelectedReview] = useState<any | null>(null);
+  const [selectedReview, setSelectedReview] = useState<NormalizedReview | null>(null);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -46,9 +48,9 @@ export function ReviewsTable({
     };
 
     loadReviews();
-  }, [query?.listingId, query?.channel, query?.from, query?.to, query?.minRating, query?.maxRating, query?.sortBy]);
+  }, [query]);
 
-  const toggleApproved = async (review: any) => {
+  const toggleApproved = async (review: NormalizedReview) => {
     const reviewId = String(review.id);
     const listingId = String(review.listingId);
     const nextApproved = !approvedIds.has(reviewId);

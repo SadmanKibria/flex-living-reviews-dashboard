@@ -6,6 +6,8 @@ import { fetchReviews } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star, ArrowUp, ArrowDown } from 'lucide-react';
 
+import type { ListingSummary } from '@/app/api/reviews/hostaway/types';
+
 export function ListingCards({
   query,
 }: {
@@ -19,7 +21,7 @@ export function ListingCards({
     sortBy?: string;
   };
 }) {
-  const [listings, setListings] = useState<any[]>([]);
+  const [listings, setListings] = useState<ListingSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +39,7 @@ export function ListingCards({
     };
 
     loadListings();
-  }, [query?.listingId, query?.channel, query?.from, query?.to, query?.minRating, query?.maxRating, query?.sortBy]);
+  }, [query]);
 
   if (loading) {
     return <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />;

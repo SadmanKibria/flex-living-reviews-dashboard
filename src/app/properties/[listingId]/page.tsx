@@ -84,7 +84,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
               </section>
 
               <section>
-                <PropertyReviews listingId={listingId} approvedReviewIds={approved.approvedReviewIds ?? []} allReviews={allReviews} />
+                <PropertyReviews approvedReviewIds={approved.approvedReviewIds ?? []} allReviews={allReviews} />
               </section>
             </div>
 
@@ -130,11 +130,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
 }
 
 async function PropertyReviews({
-  listingId,
   approvedReviewIds,
   allReviews,
 }: {
-  listingId: string;
   approvedReviewIds: string[];
   allReviews: NormalizedReview[];
 }) {

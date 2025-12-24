@@ -5,6 +5,16 @@ import path from 'node:path';
 
 import type { ApiResponse, ListingSummary, NormalizedReview, RawReview } from './types';
 
+type HostawayExampleReview = {
+  id?: string | number;
+  type?: string;
+  rating?: number | null;
+  publicReview?: string;
+  reviewCategory?: Array<{ category?: string; rating?: number }>;
+  submittedAt?: string;
+  listingName?: string;
+};
+
 export async function GET() {
   // TODO: Implement Hostaway API integration
 
@@ -108,15 +118,14 @@ async function loadMockHostawayReviews(): Promise<unknown> {
 function normalizeHostawayReviews(payload: unknown): NormalizedReview[] {
   if (!payload || typeof payload !== 'object') return [];
 
-  const p = payload as any;
-
-  if (Array.isArray(p?.data)) {
-    const rawReviews = p.data as RawReview[];
-    return rawReviews.map(normalizeRawReview).filter(Boolean) as NormalizedReview[];
+  if (isRawApiPayload(payload)) {
+    return payload.data.map(normalizeRawReview).filter((v): v is NormalizedReview => v !== null);
   }
 
-  if (Array.isArray(p?.result)) {
-    return (p.result as any[]).map(normalizeHostawayExampleReview).filter(Boolean) as NormalizedReview[];
+  if (isExamplePayload(payload)) {
+    return payload.result
+      .map(normalizeHostawayExampleReview)
+      .filter((v): v is NormalizedReview => v !== null);
   }
 
   return [];
@@ -143,12 +152,11 @@ function normalizeRawReview(r: RawReview): NormalizedReview | null {
   };
 }
 
-function normalizeHostawayExampleReview(r: any): NormalizedReview | null {
+function normalizeHostawayExampleReview(r: HostawayExampleReview): NormalizedReview | null {
   const categories: { category: string; rating: number }[] = [];
-  const rc = r?.reviewCategory;
+  const rc = r.reviewCategory;
   if (Array.isArray(rc)) {
     for (const item of rc) {
-      if (!item || typeof item !== 'object') continue;
       const category = String(item.category ?? '');
       const rating = Number(item.rating);
       if (!category || Number.isNaN(rating)) continue;
@@ -156,18 +164,18 @@ function normalizeHostawayExampleReview(r: any): NormalizedReview | null {
     }
   }
 
-  const listingName = String(r?.listingName ?? '');
+  const listingName = String(r.listingName ?? '');
   const listingId = listingName ? stableListingIdFromName(listingName) : '';
 
   return {
-    id: r?.id ?? '',
+    id: r.id ?? '',
     listingId,
     listingName,
-    channel: inferChannelFromReviewType(r?.type),
-    overallRating: r?.rating === null || r?.rating === undefined ? null : toFiveStarScale(Number(r.rating)),
+    channel: inferChannelFromReviewType(r.type),
+    overallRating: r.rating === null || r.rating === undefined ? null : toFiveStarScale(Number(r.rating)),
     categories: categories.sort((a, b) => a.category.localeCompare(b.category)),
-    publicReview: String(r?.publicReview ?? ''),
-    submittedAt: String(r?.submittedAt ?? ''),
+    publicReview: String(r.publicReview ?? ''),
+    submittedAt: String(r.submittedAt ?? ''),
   };
 }
 
@@ -242,4 +250,16 @@ function inferChannelFromReviewType(type: unknown): string {
   if (type.includes('airbnb')) return 'Airbnb';
   if (type.includes('booking')) return 'Booking.com';
   return 'Hostaway';
+}
+
+function isRawApiPayload(payload: unknown): payload is { data: RawReview[] } {
+  if (!payload || typeof payload !== 'object') return false;
+  const p = payload as Record<string, unknown>;
+  return Array.isArray(p.data);
+}
+
+function isExamplePayload(payload: unknown): payload is { result: HostawayExampleReview[] } {
+  if (!payload || typeof payload !== 'object') return false;
+  const p = payload as Record<string, unknown>;
+  return Array.isArray(p.result);
 }

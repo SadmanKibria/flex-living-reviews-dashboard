@@ -43,11 +43,11 @@ export function applyFilters(reviews: NormalizedReview[], filters: FilterState):
     }
 
     // Filter by rating
-    if (review.rating !== null) {
-      if (filters.minRating !== null && review.rating < filters.minRating) {
+    if (review.overallRating !== null) {
+      if (filters.minRating !== null && review.overallRating < filters.minRating) {
         return false;
       }
-      if (filters.maxRating !== null && review.rating > filters.maxRating) {
+      if (filters.maxRating !== null && review.overallRating > filters.maxRating) {
         return false;
       }
     } else if (!filters.includeUnrated) {
@@ -65,11 +65,11 @@ export function applyFilters(reviews: NormalizedReview[], filters: FilterState):
 
     // Filter by category
     if (filters.category) {
-      if (!review.categories || !(filters.category in review.categories)) {
+      const categoryEntry = (review.categories ?? []).find((c) => c.category === filters.category);
+      if (!categoryEntry) {
         return false;
       }
-      if (filters.minCategoryRating !== null && 
-          review.categories[filters.category] < (filters.minCategoryRating)) {
+      if (filters.minCategoryRating !== null && categoryEntry.rating < filters.minCategoryRating) {
         return false;
       }
     }
@@ -86,9 +86,9 @@ export function applySort(reviews: NormalizedReview[], sortBy: SortOption): Norm
       case 'oldest':
         return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
       case 'highest':
-        return (b.rating ?? 0) - (a.rating ?? 0);
+        return (b.overallRating ?? 0) - (a.overallRating ?? 0);
       case 'lowest':
-        return (a.rating ?? 5) - (b.rating ?? 5);
+        return (a.overallRating ?? 5) - (b.overallRating ?? 5);
       default:
         return 0;
     }
@@ -99,9 +99,7 @@ export function getAvailableCategories(reviews: NormalizedReview[]): string[] {
   const categories = new Set<string>();
   reviews.forEach(review => {
     if (review.categories) {
-      Object.keys(review.categories).forEach(category => {
-        categories.add(category);
-      });
+      review.categories.forEach((c) => categories.add(c.category));
     }
   });
   return Array.from(categories).sort();

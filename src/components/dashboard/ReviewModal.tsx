@@ -5,10 +5,12 @@ import { Fragment } from 'react';
 import { Star } from 'lucide-react';
 import { format } from 'date-fns';
 
+import type { NormalizedReview } from '@/app/api/reviews/hostaway/types';
+
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  review: any; // You might want to create a proper type
+  review: NormalizedReview | null;
 }
 
 export function ReviewModal({ isOpen, onClose, review }: ReviewModalProps) {
@@ -71,7 +73,7 @@ export function ReviewModal({ isOpen, onClose, review }: ReviewModalProps) {
                         Category Ratings
                       </h4>
                       <div className="space-y-2">
-                        {review.categories.map((category: any) => (
+                        {review.categories.map((category) => (
                           <div key={category.category} className="flex items-center">
                             <span className="w-32 text-sm text-gray-500 capitalize">
                               {category.category}
