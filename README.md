@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flex Living Reviews Dashboard
 
-## Getting Started
+## What the app does
+This app helps Flex Living managers understand property performance from guest reviews, filter/sort the review stream, and curate which reviews appear on the public-facing property page. It integrates with Hostaway (mocked using realistic JSON) and includes an optional Google Places Reviews fetch.
 
-First, run the development server:
+## Local setup
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create/update environment variables (example):
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3000
+GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE
+```
+
+3. Run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture overview
+- **Framework**
+  - Next.js App Router (server components + route handlers), TypeScript, Tailwind CSS.
+- **Backend (API routes)**
+  - `GET /api/reviews/hostaway`
+    - Loads mocked Hostaway data and returns normalized reviews + per-listing summaries.
+    - Supports query params for filtering/sorting.
+  - `GET /api/reviews/approved` and `POST /api/reviews/approved`
+    - Stores manager approval state in a small JSON file.
+  - `GET /api/reviews/google` (optional)
+    - Fetches Google Place Details (New) reviews and normalizes them.
+- **Frontend**
+  - `/dashboard` provides a filter bar, listing overview cards, and a reviews table with approval toggles.
+  - `/properties/[listingId]` renders a Flex-style listing page layout and shows only approved reviews.
+- **Storage**
+  - `src/data/hostaway-reviews.mock.json` for mocked review input.
+  - `src/data/approved-reviews.json` for persisted approval state.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Review approval flow
+- **Manager action (Dashboard)**
+  - In the dashboard review table, a manager toggles `Approve` on a review.
+- **Persistence**
+  - The frontend calls `POST /api/reviews/approved` with `{ reviewId, listingId, approved }`.
+  - The server persists this into `src/data/approved-reviews.json`.
+- **Public display (Property page)**
+  - The property page reads `GET /api/reviews/approved?listingId=...`.
+  - It then filters Hostaway reviews to **render only approved review IDs**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data normalization choices
+The UI works with a single, predictable review shape:
 
-## Learn More
+```ts
+NormalizedReview = {
+  id,
+  listingId,
+  listingName,
+  channel,
+  overallRating,      // normalized to 0–5
+  categories: [{ category, rating }], // also normalized to 0–5
+  publicReview,
+  submittedAt
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+- **Rating scale**
+  - Some inputs use 0–10 (or mixed scales). Ratings are normalized to **0–5** for consistent comparisons and UI.
+- **Categories**
+  - Hostaway category ratings are mapped into a flat array of `{ category, rating }` for rendering and aggregation.
+- **Listing summaries**
+  - `ListingSummary` is derived from normalized reviews (avg rating, count, category averages).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Google Reviews findings
+- **Feasibility**
+  - Google reviews can be fetched via **Places API (New) Place Details** by requesting the `reviews` field using a field mask.
+  - Endpoint implemented: `GET /api/reviews/google?placeId=...`.
+- **Operational requirements**
+  - Requires `GOOGLE_MAPS_API_KEY`.
+  - Review availability depends on the place and Google’s response; some places return limited/no reviews.
+- **Data differences vs Hostaway**
+  - Google reviews provide an overall rating and text, but do not provide Hostaway-style per-category ratings.
+- **Compliance**
+  - When displaying Google reviews, you must respect Google’s attribution and display requirements (author attribution/source).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## AI tools used (explicit)
+- **Cascade (agentic coding assistant)**
+  - Used to navigate the codebase, implement API routes, normalize JSON, build UI wiring, and draft this documentation.
+- **Web documentation lookup**
+  - Used to confirm Google Places API (New) request/field mask patterns for fetching `reviews`.
