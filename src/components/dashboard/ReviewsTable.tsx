@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchReviews } from '@/lib/api';
+import { fetchApprovedReviewIds, fetchReviews, setReviewApproved } from '@/lib/api';
 import { format } from 'date-fns';
 import { Star } from 'lucide-react';
 import { ReviewModal } from './ReviewModal';
@@ -12,12 +12,15 @@ export function ReviewsTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedReview, setSelectedReview] = useState<any | null>(null);
+  const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
     const loadReviews = async () => {
       try {
-        const data = await fetchReviews();
+        const [data, approved] = await Promise.all([fetchReviews(), fetchApprovedReviewIds()]);
         setReviews(data.reviews);
+        setApprovedIds(new Set(approved));
       } catch (err) {
         setError('Failed to load reviews');
         console.error(err);
@@ -28,6 +31,27 @@ export function ReviewsTable() {
 
     loadReviews();
   }, []);
+
+  const toggleApproved = async (review: any) => {
+    const reviewId = String(review.id);
+    const listingId = String(review.listingId);
+    const nextApproved = !approvedIds.has(reviewId);
+
+    setSavingId(reviewId);
+    try {
+      await setReviewApproved({ reviewId, listingId, approved: nextApproved });
+      setApprovedIds((prev) => {
+        const next = new Set(prev);
+        if (nextApproved) next.add(reviewId);
+        else next.delete(reviewId);
+        return next;
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   if (loading) {
     return <div className="h-64 bg-gray-100 rounded-lg animate-pulse" />;
@@ -79,12 +103,25 @@ export function ReviewsTable() {
                   {review.publicReview}
                 </div>
                 <div className="col-span-1 text-sm font-medium">
-                  <button
-                    onClick={() => setSelectedReview(review)}
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    View
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => setSelectedReview(review)}
+                      className="text-indigo-600 hover:text-indigo-900 text-left"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => toggleApproved(review)}
+                      disabled={savingId === String(review.id)}
+                      className={
+                        approvedIds.has(String(review.id))
+                          ? 'text-green-700 hover:text-green-900 text-left'
+                          : 'text-gray-500 hover:text-gray-700 text-left'
+                      }
+                    >
+                      {approvedIds.has(String(review.id)) ? 'Approved' : 'Approve'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
