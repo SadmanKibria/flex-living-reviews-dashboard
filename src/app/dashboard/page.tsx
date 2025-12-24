@@ -1,7 +1,6 @@
 // src/app/dashboard/page.tsx
 import { Metadata } from 'next';
-import { ListingCards } from '@/components/dashboard/ListingCards';
-import { ReviewsTable } from '@/components/dashboard/ReviewsTable';
+import { DashboardClient } from '@/components/dashboard/DashboardClient';
 import { LastUpdated } from '@/components/dashboard/LastUpdated';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
@@ -19,19 +18,9 @@ export default function DashboardPage() {
         </ErrorBoundary>
       </header>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Listing Overview</h2>
-        <ErrorBoundary fallback={<div className="text-red-500">Failed to load listing data</div>}>
-          <ListingCards />
-        </ErrorBoundary>
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Recent Reviews</h2>
-        <ErrorBoundary fallback={<div className="text-red-500">Failed to load reviews</div>}>
-          <ReviewsTable />
-        </ErrorBoundary>
-      </section>
+      <ErrorBoundary fallback={<div className="text-red-500">Failed to load dashboard</div>}>
+        <DashboardClient />
+      </ErrorBoundary>
     </div>
   );
 }

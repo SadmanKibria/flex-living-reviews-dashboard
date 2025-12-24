@@ -18,6 +18,7 @@ export async function GET() {
     const to = searchParams.get('to');
     const minRating = searchParams.get('minRating');
     const maxRating = searchParams.get('maxRating');
+    const sortBy = searchParams.get('sortBy');
 
     const raw = await loadMockHostawayReviews();
     const normalized = normalizeHostawayReviews(raw);
@@ -56,8 +57,23 @@ export async function GET() {
     });
 
     const listings = buildListingSummaries(filtered);
+
+    const sortedReviews = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+        case 'highest':
+          return (b.overallRating ?? -1) - (a.overallRating ?? -1);
+        case 'lowest':
+          return (a.overallRating ?? 6) - (b.overallRating ?? 6);
+        case 'newest':
+        default:
+          return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
+      }
+    });
+
     const payload: ApiResponse = {
-      reviews: filtered.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()),
+      reviews: sortedReviews,
       listings,
     };
 

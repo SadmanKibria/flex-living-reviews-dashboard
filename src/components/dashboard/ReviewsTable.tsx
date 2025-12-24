@@ -7,7 +7,19 @@ import { format } from 'date-fns';
 import { Star } from 'lucide-react';
 import { ReviewModal } from './ReviewModal';
 
-export function ReviewsTable() {
+export function ReviewsTable({
+  query,
+}: {
+  query?: {
+    listingId?: string;
+    channel?: string;
+    from?: string;
+    to?: string;
+    minRating?: string;
+    maxRating?: string;
+    sortBy?: string;
+  };
+}) {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +29,12 @@ export function ReviewsTable() {
 
   useEffect(() => {
     const loadReviews = async () => {
+      setLoading(true);
       try {
-        const [data, approved] = await Promise.all([fetchReviews(), fetchApprovedReviewIds()]);
+        const [data, approved] = await Promise.all([
+          fetchReviews(query),
+          fetchApprovedReviewIds(query?.listingId),
+        ]);
         setReviews(data.reviews);
         setApprovedIds(new Set(approved));
       } catch (err) {
@@ -30,7 +46,7 @@ export function ReviewsTable() {
     };
 
     loadReviews();
-  }, []);
+  }, [query?.listingId, query?.channel, query?.from, query?.to, query?.minRating, query?.maxRating, query?.sortBy]);
 
   const toggleApproved = async (review: any) => {
     const reviewId = String(review.id);

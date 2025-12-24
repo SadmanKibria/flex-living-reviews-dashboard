@@ -6,7 +6,19 @@ import { fetchReviews } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star, ArrowUp, ArrowDown } from 'lucide-react';
 
-export function ListingCards() {
+export function ListingCards({
+  query,
+}: {
+  query?: {
+    listingId?: string;
+    channel?: string;
+    from?: string;
+    to?: string;
+    minRating?: string;
+    maxRating?: string;
+    sortBy?: string;
+  };
+}) {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +26,7 @@ export function ListingCards() {
   useEffect(() => {
     const loadListings = async () => {
       try {
-        const data = await fetchReviews();
+        const data = await fetchReviews(query);
         setListings(data.listings);
       } catch (err) {
         setError('Failed to load listings');
@@ -25,7 +37,7 @@ export function ListingCards() {
     };
 
     loadListings();
-  }, []);
+  }, [query?.listingId, query?.channel, query?.from, query?.to, query?.minRating, query?.maxRating, query?.sortBy]);
 
   if (loading) {
     return <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />;
@@ -62,7 +74,7 @@ export function ListingCards() {
                 <div className="flex items-center gap-2 text-green-600">
                   <ArrowUp className="h-4 w-4" />
                   {Object.entries(listing.categoryAverages)
-                    .sort(([, a], [, b]) => (b || 0) - (a || 0))
+                    .sort(([, a], [, b]) => Number(b ?? 0) - Number(a ?? 0))
                     .slice(0, 2)
                     .map(([category]) => (
                       <span key={category} className="capitalize bg-green-50 px-2 py-1 rounded">
@@ -74,7 +86,7 @@ export function ListingCards() {
                   <div className="flex items-center gap-2 text-red-600">
                     <ArrowDown className="h-4 w-4" />
                     {Object.entries(listing.categoryAverages)
-                      .sort(([, a], [, b]) => (a || 0) - (b || 0))
+                      .sort(([, a], [, b]) => Number(a ?? 0) - Number(b ?? 0))
                       .slice(0, 1)
                       .map(([category]) => (
                         <span key={category} className="capitalize bg-red-50 px-2 py-1 rounded">

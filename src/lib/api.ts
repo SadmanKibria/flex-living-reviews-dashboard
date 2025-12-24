@@ -8,8 +8,27 @@ function withBase(path: string): string {
   return `${API_BASE_URL}${path}`;
 }
 
-export async function fetchReviews(): Promise<ApiResponse> {
-  const response = await fetch(withBase('/api/reviews/hostaway'));
+export async function fetchReviews(query?: {
+  listingId?: string;
+  channel?: string;
+  from?: string;
+  to?: string;
+  minRating?: string;
+  maxRating?: string;
+  sortBy?: string;
+}): Promise<ApiResponse> {
+  const qs = new URLSearchParams();
+  if (query?.listingId) qs.set('listingId', query.listingId);
+  if (query?.channel) qs.set('channel', query.channel);
+  if (query?.from) qs.set('from', query.from);
+  if (query?.to) qs.set('to', query.to);
+  if (query?.minRating) qs.set('minRating', query.minRating);
+  if (query?.maxRating) qs.set('maxRating', query.maxRating);
+  if (query?.sortBy) qs.set('sortBy', query.sortBy);
+
+  const path = qs.toString() ? `/api/reviews/hostaway?${qs.toString()}` : '/api/reviews/hostaway';
+
+  const response = await fetch(withBase(path), { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Failed to fetch reviews');
   }
