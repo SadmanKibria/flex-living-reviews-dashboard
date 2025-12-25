@@ -1,6 +1,30 @@
 import Link from 'next/link';
+import { headers } from 'next/headers';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  let exampleListingId: string | null = null;
+
+  try {
+    const h = await headers();
+    const host = h.get('host');
+    const proto = h.get('x-forwarded-proto') ?? 'http';
+    const origin = host ? `${proto}://${host}` : '';
+    const url = `${origin}/api/reviews/hostaway`;
+
+    const res = await fetch(url, { cache: 'no-store' });
+    if (res.ok) {
+      const data = (await res.json()) as { listings?: Array<{ listingId: string }> };
+      const first = data.listings?.[0]?.listingId;
+      if (typeof first === 'string' && first.length > 0) {
+        exampleListingId = first;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center px-4 sm:px-6 lg:px-8">
@@ -18,7 +42,7 @@ export default function Home() {
             Go to Dashboard
           </Link>
           <Link
-            href="/properties/example"
+            href={exampleListingId ? `/properties/${exampleListingId}` : '/dashboard'}
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             View Example Property

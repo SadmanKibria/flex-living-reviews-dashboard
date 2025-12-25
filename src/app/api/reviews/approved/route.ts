@@ -6,6 +6,15 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const listingId = url.searchParams.get('listingId') ?? undefined;
 
+  if (!listingId) {
+    return NextResponse.json(
+      {
+        error: 'listingId is required',
+      },
+      { status: 400 }
+    );
+  }
+
   const approvedReviewIds = await getApprovedReviewIds(listingId);
 
   return NextResponse.json(
@@ -26,12 +35,12 @@ export async function POST(request: Request) {
 
     const reviewId = body.reviewId;
     const listingId = body.listingId;
-    const approved = Boolean(body.approved);
+    const approved = body.approved;
 
-    if (!reviewId || !listingId) {
+    if (!reviewId || !listingId || typeof approved !== 'boolean') {
       return NextResponse.json(
         {
-          error: 'reviewId and listingId are required',
+          error: 'reviewId, listingId, and approved are required',
         },
         { status: 400 }
       );

@@ -15,13 +15,12 @@ type HostawayExampleReview = {
   listingName?: string;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   // TODO: Implement Hostaway API integration
 
   try {
-    const url = new URL(process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/reviews/hostaway` : 'http://localhost/api/reviews/hostaway');
-
-    const searchParams = new URLSearchParams(url.search);
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
     const listingId = searchParams.get('listingId');
     const channel = searchParams.get('channel');
     const from = searchParams.get('from');

@@ -1,46 +1,61 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
+import { kv } from '@vercel/kv';
 
-export interface ApprovedReviewRecord {
-  reviewId: string;
-  listingId: string;
-  approvedAt: string;
+function approvalsKey(listingId: string): string {
+  return `approvals:listing:${listingId}`;
 }
 
-interface ApprovedReviewsDb {
-  version: 1;
-  reviews: Record<string, ApprovedReviewRecord>;
+function canUseKv(): boolean {
+  return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
-function dbPath(): string {
-  return path.join(process.cwd(), 'src', 'data', 'approved-reviews.json');
-}
+const memoryStore = new Map<string, Set<string>>();
+let warnedMissingKv = false;
 
-const EMPTY_DB: ApprovedReviewsDb = { version: 1, reviews: {} };
-
-async function readDb(): Promise<ApprovedReviewsDb> {
-  try {
-    const raw = await readFile(dbPath(), 'utf8');
-    const parsed = JSON.parse(raw) as ApprovedReviewsDb;
-    if (!parsed || typeof parsed !== 'object') return EMPTY_DB;
-    if (parsed.version !== 1 || !parsed.reviews || typeof parsed.reviews !== 'object') return EMPTY_DB;
-    return parsed;
-  } catch {
-    return EMPTY_DB;
+function getStore(listingId: string): {
+  type: 'kv' | 'memory';
+  key: string;
+} {
+  if (canUseKv()) {
+    return { type: 'kv', key: approvalsKey(listingId) };
   }
+
+  if (!warnedMissingKv && process.env.NODE_ENV !== 'production') {
+    warnedMissingKv = true;
+    console.warn(
+      '[approvedReviewsStore] KV env vars missing; using in-memory approvals store (dev-only). Approvals will not persist across restarts.'
+    );
+  }
+
+  return { type: 'memory', key: approvalsKey(listingId) };
 }
 
-async function writeDb(db: ApprovedReviewsDb): Promise<void> {
-  await writeFile(dbPath(), JSON.stringify(db, null, 2), 'utf8');
+async function readApprovedIds(listingId: string): Promise<string[]> {
+  const store = getStore(listingId);
+
+  if (store.type === 'kv') {
+    const value = (await kv.get(store.key)) as unknown;
+    if (!Array.isArray(value)) return [];
+    return value.filter((v): v is string => typeof v === 'string');
+  }
+
+  const set = memoryStore.get(store.key);
+  return set ? Array.from(set) : [];
+}
+
+async function writeApprovedIds(listingId: string, ids: string[]): Promise<void> {
+  const store = getStore(listingId);
+
+  if (store.type === 'kv') {
+    await kv.set(store.key, ids);
+    return;
+  }
+
+  memoryStore.set(store.key, new Set(ids));
 }
 
 export async function getApprovedReviewIds(listingId?: string): Promise<string[]> {
-  const db = await readDb();
-  const records = Object.values(db.reviews);
-  return records
-    .filter((r) => (listingId ? r.listingId === listingId : true))
-    .sort((a, b) => new Date(b.approvedAt).getTime() - new Date(a.approvedAt).getTime())
-    .map((r) => r.reviewId);
+  if (!listingId) return [];
+  return readApprovedIds(listingId);
 }
 
 export async function setReviewApproved(input: {
@@ -54,19 +69,12 @@ export async function setReviewApproved(input: {
     throw new Error('reviewId and listingId are required');
   }
 
-  const db = await readDb();
+  const existing = await readApprovedIds(listingId);
+  const next = new Set(existing);
+  if (approved) next.add(reviewId);
+  else next.delete(reviewId);
 
-  if (approved) {
-    db.reviews[reviewId] = {
-      reviewId,
-      listingId,
-      approvedAt: new Date().toISOString(),
-    };
-  } else {
-    delete db.reviews[reviewId];
-  }
-
-  await writeDb(db);
+  await writeApprovedIds(listingId, Array.from(next));
 
   return { approved };
 }

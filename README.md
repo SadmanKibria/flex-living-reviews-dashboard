@@ -10,11 +10,16 @@ This app helps Flex Living managers understand property performance from guest r
 npm install
 ```
 
-2. Create/update environment variables (example):
+2. Create/update environment variables (optional):
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3000
+# (Optional) Google Places reviews endpoint only
 GOOGLE_MAPS_API_KEY=YOUR_KEY_HERE
+
+# (Optional) Vercel KV / Upstash Redis for approvals persistence
+# If unset locally, the app falls back to an in-memory store (dev-only) and approvals will not persist across restarts.
+KV_REST_API_URL=
+KV_REST_API_TOKEN=
 ```
 
 3. Run:
@@ -31,7 +36,7 @@ npm run dev
     - Loads mocked Hostaway data and returns normalized reviews + per-listing summaries.
     - Supports query params for filtering/sorting.
   - `GET /api/reviews/approved` and `POST /api/reviews/approved`
-    - Stores manager approval state in a small JSON file.
+    - Stores manager approval state in **Vercel KV** (Upstash Redis) keyed per listing.
   - `GET /api/reviews/google` (optional)
     - Fetches Google Place Details (New) reviews and normalizes them.
 - **Frontend**
@@ -39,14 +44,19 @@ npm run dev
   - `/properties/[listingId]` renders a Flex-style listing page layout and shows only approved reviews.
 - **Storage**
   - `src/data/hostaway-reviews.mock.json` for mocked review input.
-  - `src/data/approved-reviews.json` for persisted approval state.
+  - Approvals are stored in KV as `approvals:listing:<listingId> => string[]`.
+
+## Deployment note (why KV)
+Serverless deployments (like Vercel) do not provide reliable writable filesystem persistence between invocations or across redeploys.
+That means writing approvals to a JSON file will appear to work locally but will not consistently persist in production.
+This project uses **Vercel KV** so that manager approvals persist across refreshes and redeploys.
 
 ## Review approval flow
 - **Manager action (Dashboard)**
   - In the dashboard review table, a manager toggles `Approve` on a review.
 - **Persistence**
   - The frontend calls `POST /api/reviews/approved` with `{ reviewId, listingId, approved }`.
-  - The server persists this into `src/data/approved-reviews.json`.
+  - The server updates KV key `approvals:listing:<listingId>`.
 - **Public display (Property page)**
   - The property page reads `GET /api/reviews/approved?listingId=...`.
   - It then filters Hostaway reviews to **render only approved review IDs**.

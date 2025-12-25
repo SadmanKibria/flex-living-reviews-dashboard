@@ -36,7 +36,8 @@ export async function fetchReviews(query?: {
 }
 
 export async function fetchApprovedReviewIds(listingId?: string): Promise<string[]> {
-  const qs = listingId ? `?listingId=${encodeURIComponent(listingId)}` : '';
+  if (!listingId) return [];
+  const qs = `?listingId=${encodeURIComponent(listingId)}`;
   const response = await fetch(withBase(`/api/reviews/approved${qs}`), {
     cache: 'no-store',
   });
