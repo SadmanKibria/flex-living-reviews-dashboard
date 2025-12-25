@@ -35,7 +35,9 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
   ]);
 
   const allReviews = hostaway.reviews ?? [];
-  const listingName = allReviews[0]?.listingName || `Property #${listingId}`;
+  // Derive the display title from Hostaway listing metadata (not approved reviews) so it works even when 0 reviews are approved.
+  const listing = (hostaway.listings ?? []).find((l) => String(l.listingId) === String(listingId));
+  const displayTitle = listing?.listingName ?? `Property ${listingId}`;
   const insights = buildInsights(allReviews);
 
   return (
@@ -46,7 +48,7 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
             <div className="h-56 sm:h-72 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-500" />
             <div className="absolute inset-x-0 bottom-0 px-6 pb-6">
               <div className="backdrop-blur-sm bg-white/80 rounded-xl p-4">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">{listingName}</h1>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">{displayTitle}</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-600">
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1">Central location</span>
                   <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1">Self check-in</span>
